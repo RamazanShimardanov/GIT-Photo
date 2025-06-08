@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <title>GIT photo - Игра в жизнь + GIF</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+    body {
+      background-color: #000;
+      margin: 0;
+      font-family: 'Press Start 2P', cursive, monospace;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    #topMenu {
+      background-color: #111;
+      border-bottom: 2px solid #5555AA;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 20px;
+      font-size: 14px;
+      user-select: none;
+      flex-shrink: 0;
+    }
+
+    #topMenu .left {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      color: #9999DD;
+      font-weight: 700;
+    }
+    #topMenu .left .title {
+      font-size: 18px;
+      color: #FFFFFF;
+      letter-spacing: 2px;
+    }
+    #topMenu .left .telegram {
+      font-size: 14px;
+      color: #7777FF;
+    }
+
+    #mainContainer {
+      flex-grow: 1;
+      display: flex;
+      background: #111;
+      padding: 15px 20px;
+      box-sizing: border-box;
+      gap: 20px;
+      overflow: hidden;
+    }
+
+    #gameArea {
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    canvas {
+      background-color: #F0F0F0;
+      box-shadow: 0 0 10px #9999DD;
+      cursor: pointer;
+      border: 2px solid #5555AA;
+    }
+
+    .controls {
+      margin-top: 10px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+      color: white;
+      font-family: 'Press Start 2P', cursive, monospace;
+    }
+    button {
+      padding: 6px 12px;
+      font-size: 12px;
+      background-color: #222;
+      border: 1px solid #555;
+      color: white;
+      border-radius: 4px;
+      cursor: pointer;
+      font-family: 'Press Start 2P', cursive, monospace;
+      transition: background-color 0.3s;
+    }
+    button:hover:not(:disabled) {
+      background-color: #444;
+    }
+    button:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+    label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 10px;
+      color: #AAA;
+      font-family: 'Press Start 2P', cursive, monospace;
+    }
+    input[type="range"] {
+      width: 90px;
+      cursor: pointer;
+    }
+    input[type="color"] {
+      cursor: pointer;
+      border: none;
+      width: 28px;
+      height: 28px;
+      padding: 0;
+      background: none;
+    }
+
+    #downloadGifBtn {
+      margin-top: 10px;
+      align-self: center;
+      font-size: 12px;
+      padding: 6px 16px;
+    }
+
+    #status {
+      margin-top: 8px;
+      font-size: 10px;
+      color: #9999DD;
+      font-family: monospace;
+      min-height: 18px;
+      text-align: center;
+      user-select: none;
+    }
+
+    #instructionPanel {
+      background: white;
+      color: #111;
+      width: 280px;
+      padding: 15px 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 15px rgba(255,255,255,0.2);
+      font-family: Arial, sans-serif;
+      font-size: 14px;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      user-select: none;
+    }
+    #instructionPanel h2 {
+      margin-top: 0;
+      font-weight: 700;
+      font-family: 'Press Start 2P', cursive, monospace;
+      font-size: 16px;
+      color: #222;
+      margin-bottom: 10px;
+    }
+    #instructionPanel p {
+      line-height: 1.4;
+      color: #444;
+      flex-grow: 1;
+    }
+    #instructionPanel button.closeBtn {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      background: transparent;
+      border: none;
+      font-size: 18px;
+      font-weight: 700;
+      color: #888;
+      cursor: pointer;
+      transition: color 0.3s;
+      font-family: monospace;
+      user-select: none;
+      line-height: 1;
+    }
+    #instructionPanel button.closeBtn:hover {
+      color: #FF5555;
+    }
+
+    @media (max-width: 900px) {
+      #mainContainer {
+        flex-direction: column;
+        align-items: center;
+        padding: 10px;
+      }
+      #instructionPanel {
+        width: 100%;
+        max-width: 400px;
+        margin-top: 15px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div id="topMenu">
+    <div class="left">
+      <div class="title">GIT photo</div>
+      <div class="telegram"><a href="https://t.me/gfyly">@gfyly</a></div>
+    </div>
+  </div>
+
+  <div id="mainContainer">
+    <div id="gameArea">
+      <canvas id="gameCanvas"></canvas>
+      <div class="controls">
+        <button id="startBtn">Старт</button>
+        <button id="stopBtn">Стоп</button>
+        <button id="restartBtn">Рестарт</button>
+        <button id="clearBtn">Очистить</button>
+        <button id="loopBtn">Зациклить: ВЫКЛ</button>
+        <label>Скорость: <input type="range" id="speedSlider" min="1" max="20" value="10" /> <span id="speedValue">10</span></label>
+        <label>Живые: <input type="color" id="aliveColorInput" value="#9999DD" /></label>
+        <label>Мёртвые: <input type="color" id="deadColorInput" value="#F0F0F0" /></label>
+      </div>
+      <button id="downloadGifBtn">Скачать GIF</button>
+      <div id="status"></div>
+    </div>
+
+    <div id="instructionPanel">
+      <button class="closeBtn" title="Закрыть инструкцию">&times;</button>
+      <h2>Инструкция</h2>
+      <p>Эта программа нужна, чтобы анимировать свою аватарку, установленную по умолчанию на Github, используя игру «Жизнь». Вы можете управлять скоростью, цветами и запускать анимацию, а также сохранить её в формате GIF.</p>
+    </div>
+  </div>
+
+  <script src="gif.js"></script>
+  <script>
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    const cellSize = 16, cols = 32, rows = 32;
+    canvas.width = cols * cellSize;
+    canvas.height = rows * cellSize;
+
+    let grid = createEmptyGrid();
+    let initialState = createEmptyGrid();
+    let running = false, loopEnabled = false, waitOneFrame = false;
+    let lastTime = 0, speed = 10;
+    let aliveColor = '#9999DD', deadColor = '#F0F0F0';
+    let isCreatingGif = false;
+
+    function initCustomPattern() {
+      const pattern = [
+        "00000010000000000000010000010000",
+        "00101010000000000000010000010000",
+        "00000010000000000000011111110000",
+        "00011110000000110010000000000000",
+        "00010000000000110100000000000000",
+        "11110000000000000000000000000000",
+        "00000001110111010101000101000000",
+        "11110001000100010101000101001111",
+        "00000001010111001001000010000000",
+        "00000001110100001001110010000000",
+        "11100000000000000000000000000000",
+        "00100001111111101111111111111000",
+        "00100011000000111001100000011000",
+        "11100010000000011001100000011000",
+        "00100010011100011001111001111000",
+        "00100010011111111001101001100000",
+        "11100010011000011001101001100000",
+        "00100010011100011001101001100000",
+        "00100010011100011001101001100000",
+        "11100011000010011001101001100000",
+        "00100011111111111001101111100000",
+        "00100001111111101111001111000000",
+        "11100000000000000000000000000000",
+        "00000001110101011101110111000000",
+        "00000001010101010100100101000000",
+        "00000001110111010100100101000010",
+        "00000001000101011000100110000000",
+        "00000000000000000000000000000000",
+        "00000000000000000000000000001111",
+        "11110000000000000000000000001000",
+        "00000000000000000000000001001000",
+        "00000000000000000000000000001000"
+      ];
+
+      for (let y = 0; y < rows; y++) {
+        for (let x = 0; x < cols; x++) {
+          grid[y][x] = +pattern[y][x] || 0;
+        }
+      }
+      drawGrid();
+    }
+
+    function createEmptyGrid() {
+      return Array.from({ length: rows }, () => Array(cols).fill(0));
+    }
+
+    function copyGrid(g) {
+      return g.map(row => [...row]);
+    }
+
+    function isGridEmpty(g) {
+      return g.every(row => row.every(cell => cell === 0));
+    }
+
+    function countNeighbors(x, y, g = grid) {
+      let sum = 0;
+      for (let dy = -1; dy <= 1; dy++) {
+        for (let dx = -1; dx <= 1; dx++) {
+          if (dx === 0 && dy === 0) continue;
+          const ny = (y + dy + rows) % rows;
+          const nx = (x + dx + cols) % cols;
+          sum += g[ny][nx];
+        }
+      }
+      return sum;
+    }
+
+    function updateGrid() {
+      const next = copyGrid(grid);
+      for (let y = 0; y < rows; y++) {
+        for (let x = 0; x < cols; x++) {
+          const n = countNeighbors(x, y);
+          next[y][x] = grid[y][x] ? +(n === 2 || n === 3) : +(n === 3);
+        }
+      }
+      grid = next;
+    }
+
+    function drawGrid() {
+      for (let y = 0; y < rows; y++) {
+        for (let x = 0; x < cols; x++) {
+          ctx.fillStyle = grid[y][x] ? aliveColor : deadColor;
+          ctx.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
+        }
+      }
+    }
+
+    function gameLoop(timestamp) {
+      if (!running) return;
+      const interval = 1000 / speed;
+      if (timestamp - lastTime > interval) {
+        if (loopEnabled && isGridEmpty(grid)) {
+          if (waitOneFrame) {
+            grid = copyGrid(initialState);
+            waitOneFrame = false;
+          } else {
+            waitOneFrame = true;
+          }
+        } else {
+          updateGrid();
+        }
+        drawGrid();
+        lastTime = timestamp;
+      }
+      requestAnimationFrame(gameLoop);
+    }
+
+    canvas.addEventListener('click', e => {
+      if (running || isCreatingGif) return;
+      const rect = canvas.getBoundingClientRect();
+      const x = Math.floor((e.clientX - rect.left) / cellSize);
+      const y = Math.floor((e.clientY - rect.top) / cellSize);
+      grid[y][x] = grid[y][x] ? 0 : 1;
+      drawGrid();
+    });
+
+    const speedSlider = document.getElementById('speedSlider');
+    const speedValue = document.getElementById('speedValue');
+    speedSlider.addEventListener('input', e => {
+      speed = +e.target.value;
+      speedValue.textContent = speed;
+    });
+
+    const aliveColorInput = document.getElementById('aliveColorInput');
+    aliveColorInput.addEventListener('input', e => {
+      aliveColor = e.target.value;
+      drawGrid();
+    });
+
+    const deadColorInput = document.getElementById('deadColorInput');
+    deadColorInput.addEventListener('input', e => {
+      deadColor = e.target.value;
+      drawGrid();
+    });
+
+    document.getElementById('loopBtn').addEventListener('click', () => {
+      loopEnabled = !loopEnabled;
+      document.getElementById('loopBtn').textContent = `Зациклить: ${loopEnabled ? 'ВКЛ' : 'ВЫКЛ'}`;
+    });
+
+    document.getElementById('startBtn').addEventListener('click', () => {
+      if (!running && !isCreatingGif) {
+        initialState = copyGrid(grid);
+        running = true;
+        requestAnimationFrame(gameLoop);
+      }
+    });
+
+    document.getElementById('stopBtn').addEventListener('click', () => {
+      running = false;
+    });
+
+    document.getElementById('restartBtn').addEventListener('click', () => {
+      running = false;
+      grid = createEmptyGrid();
+      initCustomPattern();
+      initialState = copyGrid(grid);
+      drawGrid();
+    });
+
+    document.getElementById('clearBtn').addEventListener('click', () => {
+      running = false;
+      grid = createEmptyGrid();
+      drawGrid();
+    });
+
+    document.getElementById('downloadGifBtn').addEventListener('click', () => {
+      if (isCreatingGif) return;
+      isCreatingGif = true;
+      document.getElementById('status').textContent = 'Создание GIF...';
+      running = false;
+
+      const gif = new GIF({
+        workers: 2,
+        quality: 10,
+        width: canvas.width,
+        height: canvas.height,
+        workerScript: 'gif.worker.js'
+      });
+
+      let framesCount = 0;
+      const framesLimit = 60;
+
+      function addFrameAndUpdate() {
+        drawGrid();
+        gif.addFrame(ctx, {copy: true, delay: 1000 / speed});
+        framesCount++;
+        updateGrid();
+        if (framesCount < framesLimit) {
+          setTimeout(addFrameAndUpdate, 1000 / speed);
+        } else {
+          gif.on('finished', function(blob) {
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'game_of_life.gif';
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            URL.revokeObjectURL(url);
+            isCreatingGif = false;
+            document.getElementById('status').textContent = 'GIF создан.';
+          });
+          gif.render();
+        }
+      }
+
+      addFrameAndUpdate();
+    });
+
+    document.querySelector('#instructionPanel .closeBtn').addEventListener('click', () => {
+      const panel = document.getElementById('instructionPanel');
+      panel.style.display = 'none';
+    });
+
+    initCustomPattern();
+    initialState = copyGrid(grid);
+    drawGrid();
+  </script>
+
+</body>
+</html>
